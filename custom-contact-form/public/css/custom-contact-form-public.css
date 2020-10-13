@@ -1,0 +1,13 @@
+/**
+ * All of the CSS for your public-facing functionality should be
+ * included in this file.
+ */
+
+
+ .custom-success-msg {
+ 	color: green;
+ }
+
+ .custom-error-msg {
+ 	color: red;
+ }
