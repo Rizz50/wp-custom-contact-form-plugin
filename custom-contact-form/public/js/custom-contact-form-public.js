@@ -44,8 +44,23 @@
 	        }
 		} );
 
+		$( '#contact' ).keydown( function(event) {
+			var eventInstance = eventInstance || window.event;
+	        var key = eventInstance.keyCode || eventInstance.which;
+	        // console.log(key);
+	        if ( ( 48 <= key ) && ( key <= 57 ) || key == 8 || key == 9 || key == 109 || key == 35 || key == 36 || key == 45 || key == 46 || key == 13 ) {
+	            return true;
+	        } else {
+	            if ( eventInstance.preventDefault )
+	                eventInstance.preventDefault();
+	            eventInstance.returnValue = false;
+	            return false;
+	        }
+		} );
 
+		var error = 0;
 		$( "#custom-form" ).submit( function( event ) {
+			error = 0;
 			event.preventDefault();
 			
 
@@ -54,6 +69,7 @@
 
 			$( '.custom-submit-btn' ).prop( 'disabled', true );
 			$( '.custom-error-msg' ).html( '' );
+			$( '.custom-success-msg' ).html( '' );
 
 			var data = {};
 			var firstName = $( '#firstName' ).val();
@@ -107,32 +123,64 @@
 				$.each( data, function( key, value ) {
 					if( key == 'contactValidation' && value == false ) {
 						$( '.custom-error-msg' ).append( 'Contact number invalid.' + '<br/>' );
+						error = 1;
 						return;
 					}
 					if( key == 'emailValidation' && value == false ) {
 						$( '.custom-error-msg' ).append( 'Email invalid.' + '<br/>' );
+						error = 1;
 						return;
 					}
 					if( key == 'messageLength' ) {
 						$( '.custom-error-msg' ).append( value + '<br/>' );
+						error = 1;
 						return;
 					}
 					if( key == 'firstNameLength' ) {
 						$( '.custom-error-msg' ).append( value + '<br/>' );
+						error = 1;
 						return;
 					} 
 					if( key == 'lastNameLength' ) {
 						$( '.custom-error-msg' ).append( value + '<br/>' );
+						error = 1;
 						return;
 					}
 					if( value != true ) {
 						$( '.custom-error-msg' ).append( value +' is empty.' + '<br/>' );
+						error = 1;
 					}
 				});
 				$( '.custom-submit-btn' ).prop( 'disabled', false );
-			} else {
-				
 			}
+			if( error == 0 ) {
+				$.ajax({
+				    type : "post",
+				    dataType : "json",
+				    url : ajax_var.url,
+				    data : {
+				    	action: "save_custom_form_data",
+				    	custom_nonce: ajax_var.nonce,
+				    	form: 'Custom Form',
+				    	first_name: firstName,
+				    	last_name: lastName,
+				    	email: email,
+				    	contact: contact,
+				    	message: message
+				    },
+				    success: function( data ) {
+				        // $( '.custom-success-msg' ).append( JSON.stringify(data) );
+				        if( data.success ) {
+				        	$( '#custom-form' )[0].reset();
+				        	$( '.custom-success-msg' ).append( data.data.data );
+				        } else {
+				        	$( '.custom-error-msg' ).append( data.data.data );
+				        }
+				    }
+				});
+			}
+		
+			
 		} );
 	});
 

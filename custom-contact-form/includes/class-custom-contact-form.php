@@ -157,6 +157,7 @@ class Custom_Contact_Form {
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 
+		$this->loader->add_ajax_action( 'admin_menu', array( $this, 'my_add_menu_items' ) );
 	}
 
 	/**
@@ -173,7 +174,12 @@ class Custom_Contact_Form {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
-		add_shortcode( 'custom_form_sc', array( $this, 'create_custom_form' ) );
+		$this->loader->add_ajax_action( 'wp_ajax_nopriv_save_custom_form_data', array( $this, 'save_custom_form_data' ) );
+
+		$this->loader->add_ajax_action( 'wp_ajax_save_custom_form_data', array( $this, 'save_custom_form_data' ) );
+
+
+		$this->loader->add_shortcode( 'custom_form_sc', array( $this, 'create_custom_form' ) );
 	}
 
 	/**
@@ -249,5 +255,62 @@ class Custom_Contact_Form {
 		";
 
 		return $custom_html;
+	}
+
+
+
+	public function save_custom_form_data() {
+		// Check for nonce security
+	    $nonce = $_POST['custom_nonce'];
+
+	    if ( ! wp_verify_nonce( $nonce, 'ajax-nonce' ) ) {
+	    	$data = 'WP nonce error!!';
+		} else {
+			global $wpdb;
+			$insert_query = $wpdb->insert( $wpdb->prefix . 'custom_form_data', 
+			    array( 
+			      'form'  => $_POST['form'], 
+			      'first_name' => $_POST['first_name'],
+			      'last_name' => $_POST['last_name'],
+			      'email' => $_POST['email'],
+			      'contact' => $_POST['contact'],
+			      'message' => $_POST['message'],
+			      'date' => date('Y-m-d H:i:s')
+			    )
+			);
+			
+			if( $insert_query ) {
+				$data = 'Success';		
+			}
+		}
+		wp_send_json_success( array(
+    		'data' => $data
+    	) );
+		die();
+	}
+
+
+	// Custom post_type in menu
+	public function my_add_menu_items(){
+		$hook = add_menu_page( 'Custom contact form data', 'Custom contact form data list', 'activate_plugins', 'custom_contact_form', array( $this, 'render_custom_contact_form_list_page' ) );
+	}
+
+
+	public function render_custom_contact_form_list_page(){
+	 	global $myCustomContactFormClass;
+		$option = 'per_page';
+		$args = array(
+	    	'label' => 'Column',
+	    	'default' => 10,
+	    	'option' => 'columns_per_page'
+	  	);
+	  	add_screen_option( $option, $args );
+	  	require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/custom-contact-form-class.php';
+	  	$myCustomContactFormClass = new Custom_Contact_Form_Class();
+
+	  	echo '<div class="wrap"><h2>Custom contact form data list</h2>'; 
+	  	$myCustomContactFormClass->prepare_items(); 
+    	$myCustomContactFormClass->display(); 
+    	echo '</div>'; 
 	}
 }

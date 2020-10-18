@@ -14,8 +14,8 @@
  *
  * @wordpress-plugin
  * Plugin Name:       Custom Contact Form
- * Plugin URI:        https://example.com
- * Description:       This is a short description of what the plugin does. It's displayed in the WordPress admin area.
+ * Plugin URI:        https://github.com/Rizz50/wp-custom-contact-form-plugin
+ * Description:       Use [custom_form_sc] to display plugins custom form anywhere.
  * Version:           1.0.0
  * Author:            Rizwan Shaikh
  * Author URI:        https://www.cmsminds.com

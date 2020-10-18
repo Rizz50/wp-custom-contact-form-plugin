@@ -31,6 +31,23 @@ class Custom_Contact_Form_Activator {
 	 */
 	public static function activate() {
 
-	}
+		global $wpdb;
+  		$charset_collate = $wpdb->get_charset_collate();
+  		require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
 
+  		//* Create the teams table
+  		$table_name = $wpdb->prefix . 'custom_form_data';
+  		$sql = "CREATE TABLE $table_name (
+    		id INTEGER NOT NULL AUTO_INCREMENT,
+    		form TEXT NOT NULL,
+    		first_name TEXT NOT NULL,
+    		last_name TEXT NOT NULL,
+    		email TEXT NOT NULL,
+    		contact TEXT NULL,
+    		message TEXT NULL,
+    		date datetime,
+    		PRIMARY KEY (id)
+  		) $charset_collate;";
+  		dbDelta( $sql );
+	}
 }

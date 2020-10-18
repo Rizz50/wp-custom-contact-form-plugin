@@ -41,6 +41,11 @@ class Custom_Contact_Form_Loader {
 	 */
 	protected $filters;
 
+
+	protected $shortcodes;
+
+	protected $ajax_actions;
+
 	/**
 	 * Initialize the collections used to maintain the actions and filters.
 	 *
@@ -50,6 +55,8 @@ class Custom_Contact_Form_Loader {
 
 		$this->actions = array();
 		$this->filters = array();
+		$this->shortcodes = array();
+		$this->ajax_actions = array();
 
 	}
 
@@ -81,6 +88,15 @@ class Custom_Contact_Form_Loader {
 		$this->filters = $this->add( $this->filters, $hook, $component, $callback, $priority, $accepted_args );
 	}
 
+
+	public function add_shortcode( $hook, $callback ) {
+		$this->shortcodes = $this->custom_add( $this->shortcodes, $hook, $callback );
+	}
+
+	public function add_ajax_action( $hook, $callback ) {
+		$this->ajax_actions = $this->custom_add( $this->ajax_actions, $hook, $callback );
+	}
+
 	/**
 	 * A utility function that is used to register the actions and hooks into a single
 	 * collection.
@@ -109,6 +125,18 @@ class Custom_Contact_Form_Loader {
 
 	}
 
+
+	private function custom_add( $hooks, $hook, $callback ) {
+
+		$hooks[] = array(
+			'hook'          => $hook,
+			'callback'      => $callback,
+		);
+
+		return $hooks;
+
+	}
+
 	/**
 	 * Register the filters and actions with WordPress.
 	 *
@@ -124,6 +152,13 @@ class Custom_Contact_Form_Loader {
 			add_action( $hook['hook'], array( $hook['component'], $hook['callback'] ), $hook['priority'], $hook['accepted_args'] );
 		}
 
+		foreach ( $this->shortcodes as $hook ) {
+			add_shortcode( $hook['hook'], $hook['callback'] );
+		}
+
+		foreach ( $this->ajax_actions as $hook ) {
+			add_action( $hook['hook'], $hook['callback'] );
+		}
 	}
 
 }
